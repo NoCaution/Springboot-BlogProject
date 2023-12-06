@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
@@ -24,8 +23,6 @@ public class UserController {
     private UserService userService;
     @Autowired
     private CustomMapper customMapper;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
 
     @Procedure("this is to get all the users")
@@ -118,9 +115,6 @@ public class UserController {
         }
         //updates the fields of the given user with null safety and returns this user.
         User updatedUser = userService.updateUserFields(user,updateUserDto);
-        String encryptedPassword = passwordEncoder.encode(updatedUser.getPassword());
-        updatedUser.setPassword(encryptedPassword);
-
         userService.createOrUpdateUser(updatedUser);
         UserDto userDto = customMapper.map(updatedUser, UserDto.class);
         return new APIResponse(
