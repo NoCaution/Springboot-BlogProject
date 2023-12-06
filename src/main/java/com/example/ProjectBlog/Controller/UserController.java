@@ -24,7 +24,6 @@ public class UserController {
     @Autowired
     private CustomMapper customMapper;
 
-
     @Procedure("this is to get all the users")
     @GetMapping("/getUsers")
     public APIResponse getUsers(){

@@ -5,6 +5,7 @@ import com.example.ProjectBlog.Entity.User;
 import com.example.ProjectBlog.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
@@ -14,6 +15,8 @@ import java.util.UUID;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     public UserService(UserRepository userRepository) {
@@ -53,7 +56,7 @@ public class UserService implements UserDetailsService {
 
     public User updateUserFields(User user, UpdateUserDto toBeUpdatedFields) {
         user.setEmail(toBeUpdatedFields.getEmail() == null ? user.getEmail() : toBeUpdatedFields.getEmail());
-        user.setPassword(toBeUpdatedFields.getPassword() == null ? user.getPassword() : toBeUpdatedFields.getPassword());
+        user.setPassword(toBeUpdatedFields.getPassword() == null ? user.getPassword() : passwordEncoder.encode(toBeUpdatedFields.getPassword()));
         user.setFullName(toBeUpdatedFields.getFullName() == null ? user.getFullName() : toBeUpdatedFields.getFullName());
         user.setPhoneNumber(toBeUpdatedFields.getPhoneNumber() == null ? user.getPhoneNumber() : toBeUpdatedFields.getPhoneNumber());
         user.setRole(toBeUpdatedFields.getRole() == null ? user.getRole() : toBeUpdatedFields.getRole());
