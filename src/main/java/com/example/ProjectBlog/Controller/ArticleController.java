@@ -75,6 +75,7 @@ public class ArticleController {
                     "given userId is not legit"
             );
         }
+
         List<Article> articles = articleService.getArticlesByUserId(userId);
         if (articles.isEmpty()) {
             return new APIResponse(
