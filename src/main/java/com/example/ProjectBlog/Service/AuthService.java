@@ -39,6 +39,7 @@ public class AuthService {
                     true
             );
         }
+
         String password = passwordEncoder.encode(requestDto.getPassword());
         User user = new User(
                 requestDto.getFullName(),
@@ -48,12 +49,14 @@ public class AuthService {
                 new Date()
         );
         authRepository.save(user);
+
         user = userService.getUserByEmail(requestDto.getEmail());
         org.springframework.security.core.userdetails.User userDetails = new org.springframework.security.core.userdetails.User(
                 user.getId().toString(),
                 user.getPassword(),
                 user.getAuthorities()
         );
+
         String token = tokenService.generateJwtToken(userDetails);
         return new AuthenticationResponseDto(
             token
@@ -66,19 +69,28 @@ public class AuthService {
                     false
             );
         }
+
         User user = userService.getUserByEmail(requestDto.getEmail());
+        if(!passwordEncoder.matches(requestDto.getPassword(),user.getPassword())){
+            return new AuthenticationResponseDto(
+                    true
+            );
+        }
+
         authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         user.getId(),
                         requestDto.getPassword()
                 )
         );
+
         org.springframework.security.core.userdetails.User userDetails = new org.springframework.security.core.userdetails.User(
                 user.getId().toString(),
                 user.getPassword(),
                 user.getAuthorities()
         );
         String token = tokenService.generateJwtToken(userDetails);
+
         return new AuthenticationResponseDto(
                 token
         );
