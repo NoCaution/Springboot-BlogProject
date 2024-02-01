@@ -1,15 +1,17 @@
 package com.example.ProjectBlog.Service;
 
+import com.example.ProjectBlog.Entity.APIResponse;
 import com.example.ProjectBlog.Entity.Dto.AuthenticationRequestDto;
-import com.example.ProjectBlog.Entity.Dto.AuthenticationResponseDto;
 import com.example.ProjectBlog.Entity.Dto.RegistirationRequestDto;
 import com.example.ProjectBlog.Entity.User;
 import com.example.ProjectBlog.Repository.AuthRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.Date;
 
 @Service
@@ -27,16 +29,16 @@ public class AuthService {
     private AuthenticationManager authManager;
 
 
-
-    private boolean isUniqeUser(String email){
+    private boolean isUniqeUser(String email) {
         User user = userService.getUserByEmail(email);
         return user == null;
     }
 
-    public AuthenticationResponseDto register(RegistirationRequestDto requestDto){
-        if(!isUniqeUser(requestDto.getEmail())){
-            return new AuthenticationResponseDto(
-                    true
+    public APIResponse register(RegistirationRequestDto requestDto) {
+        if (!isUniqeUser(requestDto.getEmail())) {
+            return new APIResponse(
+                    HttpStatus.UNAUTHORIZED,
+                    "this email linked to another account"
             );
         }
 
@@ -58,22 +60,34 @@ public class AuthService {
         );
 
         String token = tokenService.generateJwtToken(userDetails);
-        return new AuthenticationResponseDto(
-            token
+
+        if (token == null) {
+            return new APIResponse(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "token generate failed"
+            );
+        }
+        return new APIResponse(
+                HttpStatus.OK,
+                "success",
+                token
         );
     }
 
-    public AuthenticationResponseDto login(AuthenticationRequestDto requestDto){
-        if(isUniqeUser(requestDto.getEmail())){
-            return new AuthenticationResponseDto(
-                    false
+    public APIResponse login(AuthenticationRequestDto requestDto) {
+        if (isUniqeUser(requestDto.getEmail())) {
+            return new APIResponse(
+                    HttpStatus.UNAUTHORIZED,
+                    "email or password incorrect"
             );
         }
 
         User user = userService.getUserByEmail(requestDto.getEmail());
-        if(!passwordEncoder.matches(requestDto.getPassword(),user.getPassword())){
-            return new AuthenticationResponseDto(
-                    true
+
+        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+            return new APIResponse(
+                    HttpStatus.UNAUTHORIZED,
+                    "password incorrect"
             );
         }
 
@@ -91,7 +105,16 @@ public class AuthService {
         );
         String token = tokenService.generateJwtToken(userDetails);
 
-        return new AuthenticationResponseDto(
+        if (token == null) {
+            return new APIResponse(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Token generate failed"
+            );
+        }
+
+        return new APIResponse(
+                HttpStatus.OK,
+                "success",
                 token
         );
     }
